@@ -1,0 +1,13 @@
+# Unity 自动生成目录
+Library/
+Temp/
+Logs/
+obj/
+UserSettings/
+
+# IDE 配置（Rider/IDEA）
+.idea/
+
+# VS 解决方案文件
+*.sln
+*.csproj
