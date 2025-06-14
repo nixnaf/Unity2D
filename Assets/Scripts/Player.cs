@@ -9,17 +9,16 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.XR;
 
-public class Player : MonoBehaviour
+public class Player : Entity
 {
-    private Rigidbody2D rb;
-    private Animator anim;
+   
     
     [Header("Movement")]
     [SerializeField] float xInput;
     [SerializeField] private float moveForce;
     [SerializeField] private float jumpForce;
-    [SerializeField] private int facingDir = 1;
-    [SerializeField] private int standFacingDir = 1;
+    private bool isMoving;
+    
    
 
     [Header("Dash")] 
@@ -28,43 +27,36 @@ public class Player : MonoBehaviour
     [SerializeField] private float dashCoolDown;
     private float dashTimer;
     private float dashCoolDownTimer;
-    
+    private bool isDashing;
 
 
     [Header("Attack")] 
     [SerializeField] private int comboCounter;
     [SerializeField] private float comboCoolDown;
     [SerializeField] private float comboTimer;
-    
-    [Header("GroundCheck")]
-    [SerializeField] private float groundCheckDistance;
-    [SerializeField] private LayerMask whatIsGround;
-    
-    
-    private bool isMoving;
-    private bool isDashing;
     private bool isAttacking;
-    private bool isGrounded;
+    
+    
+    
+ 
+   
+    
     
     
     // Start is called before the first frame update
-    void Start()
+    protected override void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        anim = GetComponentInChildren<Animator>();
+        base.Start();
     }
 
-    
-    
-    
+
     // Update is called once per frame
-    void Update() 
+    protected override void Update() 
     {
+        base.Update();
         CheckInput(); 
         Movement();
         AnimatorControllers(); 
-        CollisionChecks();
-        FacingChecks();
         GlobalTimer(); //需要被每帧调用持续计时，作为全局计时器使用，需要放在Update内。
         
       
@@ -89,11 +81,7 @@ public class Player : MonoBehaviour
     {
         dashCoolDownTimer -= Time.deltaTime;
         comboTimer -= Time.deltaTime;
-
-        if (comboTimer < 0)
-        {
-            comboCounter = 0;
-        }
+        
     }
 
 
@@ -106,32 +94,7 @@ public class Player : MonoBehaviour
         }
     }
     
-    
-    
-    
-    
-    private void FacingChecks()
-    {
-        if (rb.velocity.x < 0)
-        {
-            facingDir = -1;
-        }
-        else if (rb.velocity.x > 0)
-        {
-            facingDir = 1;
-        }
-
-        if (facingDir != standFacingDir)
-        {
-            Flip();
-        }
-    }
-
-    
-    private void CollisionChecks()
-    {
-        isGrounded = Physics2D.Raycast(transform.position,Vector2.down,groundCheckDistance, whatIsGround);
-    }
+  
 
 
     private void AnimatorControllers()
@@ -156,8 +119,7 @@ public class Player : MonoBehaviour
         
         if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.J))
         {
-            isAttacking = true;
-            comboTimer = comboCoolDown;
+            AttackStart();
         }
         
         
@@ -169,13 +131,29 @@ public class Player : MonoBehaviour
         
         
     }
-    
+
+    private void AttackStart()
+    {
+        if (comboTimer < 0)
+        {
+            comboCounter = 0;
+        }
+            
+        isAttacking = true;
+        comboTimer = comboCoolDown;
+    }
+
     private void Movement()
     {
         dashTimer -= Time.deltaTime;
         //dashTimer不需要被每帧调用
-        
-        if (dashTimer >= 0)
+
+        if (isAttacking)
+        {
+            rb.velocity = new Vector2(0, 0);
+        }
+        //攻击时禁止移动
+        else if (dashTimer >= 0)
         {
             
             rb.velocity = new Vector2(facingDir * dashForce, rb.velocity.y);  
@@ -199,16 +177,6 @@ public class Player : MonoBehaviour
     }
 
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawLine(transform.position,new Vector3(transform.position.x,transform.position.y-groundCheckDistance));
-    }
-
-    private void Flip()
-    {
-        facingDir *= -1;
-        standFacingDir *= -1;
-        transform.Rotate(0,180,0);
-    }
+    
     
 }
