@@ -13,6 +13,7 @@ public class Entity : MonoBehaviour
     [SerializeField] protected int standFacingDir = 1;
 
     [Header("GroundCheck")]
+    [SerializeField] protected Transform groundCheck;
     [SerializeField] protected float groundCheckDistance;
     [SerializeField] protected LayerMask whatIsGround;
     protected bool isGrounded;
@@ -59,11 +60,11 @@ public class Entity : MonoBehaviour
     
     protected virtual void OnDrawGizmos()
     {
-        Gizmos.DrawLine(transform.position,new Vector3(transform.position.x,transform.position.y-groundCheckDistance));
+        Gizmos.DrawLine(groundCheck.position,new Vector3(groundCheck.position.x,groundCheck.position.y-groundCheckDistance));
     }
     protected virtual void CollisionChecks()
     {
-        isGrounded = Physics2D.Raycast(transform.position,Vector2.down,groundCheckDistance, whatIsGround);
+        isGrounded = Physics2D.Raycast(groundCheck.position,Vector2.down,groundCheckDistance, whatIsGround);
     }
     
     
